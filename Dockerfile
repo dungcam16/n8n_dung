@@ -1,17 +1,14 @@
-# ./ytdlp-full-runner/Dockerfile
-FROM python:3.12-slim
+# Nền chính thức của n8n
+FROM n8nio/n8n:latest
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ffmpeg curl ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN pip install --no-cache-dir fastapi uvicorn[standard] yt-dlp
-
-WORKDIR /app
-ENV DATA_DIR=/data
-VOLUME ["/data"]
-EXPOSE 8080
-
-COPY app.py .
-
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8080"]
+# Cài ffmpeg + python3 + pip, rồi cài yt-dlp qua pip
+USER root
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends ffmpeg python3 python3-pip ca-certificates; \
+    pip3 install --no-cache-dir yt-dlp; \
+    rm -rf /var/lib/apt/lists/*; \
+    ln -sf /usr/bin/python3 /usr/local/bin/python
+    
+# Trả quyền chạy về user node như mặc định của n8n
+USER node

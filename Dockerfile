@@ -3,13 +3,12 @@ FROM docker.n8n.io/n8nio/n8n:latest
 USER root
 SHELL ["/bin/sh","-euxo","pipefail","-c"]
 
-# Cài python3, ffmpeg, sox, curl, ImageMagick trên Alpine
+# Cài python3, ffmpeg, sox với định dạng MP3, curl, ImageMagick trên Alpine
 RUN apk add --no-cache \
       python3 \
       ffmpeg \
       sox \
-      libsox \
-      libsox-lame \
+      sox-lame \
       ca-certificates \
       curl \
       imagemagick && \

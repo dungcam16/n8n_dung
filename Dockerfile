@@ -27,9 +27,10 @@ RUN apk add --no-cache \
 RUN python3 -m venv /opt/fxnorm-venv \
   && /opt/fxnorm-venv/bin/pip install --upgrade pip setuptools wheel
 
-# Cài PyTorch CPU
+# Thay block cài PyTorch
 RUN /opt/fxnorm-venv/bin/pip install \
-      torch==1.9.0+cpu torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+      torch==2.6.0+cpu torchvision==0.15.2+cpu torchaudio==2.6.2+cpu \
+      --index-url https://download.pytorch.org/whl/cpu
 
 # Cài các thư viện audio cần thiết
 RUN /opt/fxnorm-venv/bin/pip install \
@@ -59,3 +60,4 @@ RUN chmod +x /opt/audio_workspace/fxnorm_wrapper.py
 RUN ln -sf "$(command -v python3)" /usr/local/bin/python
 
 USER node
+

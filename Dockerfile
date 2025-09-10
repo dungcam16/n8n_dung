@@ -1,36 +1,28 @@
-# Dockerfile (dungcam16/ytdlp)
-FROM docker.n8n.io/n8nio/n8n:latest
+FROM python:3.12-slim
 
-USER root
-SHELL ["/bin/sh","-euxo","pipefail","-c"]
+# System deps
+RUN apt update && apt install -y --no-install-recommends \
+    git ffmpeg build-essential python3-dev && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install system dependencies
-RUN apk add --no-cache \
-      python3 python3-dev py3-pip build-base git \
-      ffmpeg sox ca-certificates curl imagemagick \
-      libsndfile-dev fftw-dev libsamplerate-dev \
-      alsa-lib-dev cmake pkgconfig
+# Python env is system Python
+# Install PyTorch CPU
+RUN pip install --no-cache-dir \
+    torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 
-# Create Python virtual environment
-RUN python3 -m venv /opt/fxnorm-venv \
-  && /opt/fxnorm-venv/bin/pip install --upgrade pip setuptools wheel
+# Clone and install FxNorm-Automix
+RUN git clone https://github.com/sony/FxNorm-automix.git /opt/FxNorm
+WORKDIR /opt/FxNorm
+RUN pip install --no-cache-dir -r requirements.txt && \
+    python setup.py install
 
-# Install PyTorch CPU packages
-RUN /opt/fxnorm-venv/bin/pip install \
-      --index-url https://download.pytorch.org/whl/cpu \
-      torch torchvision torchaudio
+# Install FastAPI and Uvicorn
+RUN pip install --no-cache-dir fastapi uvicorn aiofiles
 
-# Clone and install FxNorm-Automix (includes all audio dependencies)
-WORKDIR /opt
-RUN git clone https://github.com/sony/FxNorm-automix.git
-WORKDIR /opt/FxNorm-automix
-RUN /opt/fxnorm-venv/bin/pip install -r requirements.txt \
-  && /opt/fxnorm-venv/bin/python setup.py install
+# Copy service script
+COPY fxnorm_service.py /opt/fxnorm_service.py
 
-# Copy wrapper script and set permissions
-WORKDIR /
-COPY fxnorm_wrapper.py /opt/audio_workspace/fxnorm_wrapper.py
-RUN chmod +x /opt/audio_workspace/fxnorm_wrapper.py \
-  && ln -sf "$(command -v python3)" /usr/local/bin/python
+# Expose port
+EXPOSE 8000
 
-USER node
+CMD ["uvicorn","/opt/fxnorm_service:app","--host","0.0.0.0","--port","8000"]

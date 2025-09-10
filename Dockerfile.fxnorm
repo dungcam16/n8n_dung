@@ -1,4 +1,4 @@
-# Dockerfile.fxnorm (updated to skip Git installs in requirements.txt)
+# Dockerfile.fxnorm (revised to drop version-pinned torch in requirements.txt)
 FROM python:3.12-slim
 
 # Install minimal system deps
@@ -14,8 +14,11 @@ RUN pip install --no-cache-dir \
 RUN git clone https://github.com/sony/FxNorm-automix.git /opt/FxNorm
 WORKDIR /opt/FxNorm
 
-# Remove problematic Git deps then install
-RUN sed -e '/pymixconsole/d' -e '/pyloudnorm/d' requirements.txt > req.txt \
+# Strip problematic entries and version constraints, then install
+RUN sed -e '/pymixconsole/d' \
+        -e '/pyloudnorm/d' \
+        -e '/torch==/d' \
+        requirements.txt > req.txt \
  && pip install --no-cache-dir -r req.txt \
  && python setup.py install
 
@@ -26,4 +29,5 @@ RUN pip install --no-cache-dir fastapi uvicorn aiofiles
 COPY fxnorm_service.py /opt/fxnorm_service.py
 
 EXPOSE 8000
+
 CMD ["uvicorn", "/opt/fxnorm_service:app", "--host", "0.0.0.0", "--port", "8000"]

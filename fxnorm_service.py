@@ -1,23 +1,32 @@
+# fxnorm_service.py (FastAPI wrapper for FxNorm-Automix)
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import FileResponse
 import tempfile, shutil, os, uuid
-from inference import run_inference
+from inference import run_inference  # from FxNorm-Automix
 
 app = FastAPI()
 
 @app.post("/mix")
 async def mix(files: list[UploadFile] = File(...)):
-    sid = uuid.uuid4().hex
-    td = tempfile.mkdtemp()
-    inp = os.path.join(td, "input"); os.makedirs(inp)
-    for i,f in enumerate(files):
-        p = os.path.join(inp, f"track_{i}.wav")
-        with open(p,"wb") as o: o.write(await f.read())
-    out = os.path.join(td, f"{sid}.wav")
+    session_id = uuid.uuid4().hex
+    tmpdir = tempfile.mkdtemp()
+    input_dir = os.path.join(tmpdir, "input")
+    os.makedirs(input_dir, exist_ok=True)
+
+    # Save uploaded files
+    for i, f in enumerate(files):
+        path = os.path.join(input_dir, f"track_{i}.wav")
+        with open(path, "wb") as out:
+            out.write(await f.read())
+
+    output_path = os.path.join(tmpdir, f"{session_id}.wav")
+
+    # Run FxNorm-Automix inference
     run_inference(
-      multitrack_path=inp,
-      output_path=out,
-      model_path="/opt/FxNorm/training/results/ours_S_pretrained",
-      config_path="/opt/FxNorm/configs/ISMIR/ours_S_pretrained/config.py"
+        multitrack_path=input_dir,
+        output_path=output_path,
+        model_path="/opt/FxNorm/training/results/ours_S_pretrained",
+        config_path="/opt/FxNorm/configs/ISMIR/ours_S_pretrained/config.py"
     )
-    return FileResponse(out, media_type="audio/wav", filename=f"{sid}.wav")
+
+    return FileResponse(output_path, media_type="audio/wav", filename=f"{session_id}.wav")

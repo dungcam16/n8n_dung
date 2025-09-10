@@ -5,11 +5,11 @@ SHELL ["/bin/sh","-euxo","pipefail","-c"]
 # Giữ nguyên packages cũ + thêm FxNorm dependencies  
 RUN apk add --no-cache \
       python3 python3-dev py3-pip py3-setuptools \
-      ffmpeg sox ca-certificates curl imagemagick \
-      # Thêm cho FxNorm
+      ffmpeg sox sox-dev ca-certificates curl imagemagick \
       build-base git pkgconfig portaudio-dev libsndfile-dev \
       fftw-dev libsamplerate-dev alsa-lib-dev cmake \
-      gcc g++ musl-dev libffi-dev openssl-dev && \
+      gcc g++ musl-dev libffi-dev openssl-dev \
+      llvm llvm-dev clang && \
     # yt-dlp như cũ
     curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp \
       -o /usr/local/bin/yt-dlp && \

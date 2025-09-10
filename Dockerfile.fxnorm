@@ -1,9 +1,9 @@
-# Dockerfile.fxnorm (revised to drop version-pinned torch in requirements.txt)
+# Dockerfile.fxnorm (fixed to install sox headers for soxbindings)
 FROM python:3.12-slim
 
-# Install minimal system deps
+# Install minimal system deps, including sox dev headers
 RUN apt update && apt install -y --no-install-recommends \
-    git ffmpeg build-essential python3-dev && \
+    git ffmpeg build-essential python3-dev libsox-dev sox && \
     rm -rf /var/lib/apt/lists/*
 
 # Install PyTorch CPU
@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir \
 RUN git clone https://github.com/sony/FxNorm-automix.git /opt/FxNorm
 WORKDIR /opt/FxNorm
 
-# Strip problematic entries and version constraints, then install
+# Strip problematic entries, then install
 RUN sed -e '/pymixconsole/d' \
         -e '/pyloudnorm/d' \
         -e '/torch==/d' \

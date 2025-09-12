@@ -3,7 +3,7 @@ FROM docker.n8n.io/n8nio/n8n:latest
 USER root
 SHELL ["/bin/sh","-euxo","pipefail","-c"]
 
-# Cài system packages & yt-dlp
+# Cài system tools & yt-dlp
 RUN apk add --no-cache \
       python3 \
       ffmpeg \
@@ -16,8 +16,13 @@ RUN apk add --no-cache \
   && chmod a+rx /usr/local/bin/yt-dlp \
   && ln -sf "$(command -v python3)" /usr/local/bin/python
 
-# Cài JS libraries cho Function nodes
-RUN cd /usr/local/lib/node_modules/n8n \
-  && npm install cheerio ethers moment --no-save --ignore-workspace-root-check
+# Tạo folder riêng để cài module JS
+RUN mkdir -p /home/node/custom_node_modules \
+  && cd /home/node/custom_node_modules \
+  && npm init -y \
+  && npm install cheerio ethers moment
+
+# Cho Node.js biết load module từ folder này
+ENV NODE_PATH=/home/node/custom_node_modules/node_modules
 
 USER node

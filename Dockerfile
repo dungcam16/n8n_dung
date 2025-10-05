@@ -17,12 +17,4 @@ RUN apk add --no-cache \
     chmod a+rx /usr/local/bin/yt-dlp && \
     # alias python
     ln -sf "$(command -v python3)" /usr/local/bin/python
-
-# Cài Chromium để Puppeteer sử dụng
-RUN apk add --no-cache chromium
-
-# Thiết lập biến môi trường cho Puppeteer trỏ tới Chromium
-ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium-browser"
-ENV PUPPETEER_ARGS="--no-sandbox --disable-setuid-sandbox"
-
 USER node

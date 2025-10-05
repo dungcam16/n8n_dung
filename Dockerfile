@@ -18,4 +18,10 @@ RUN apk add --no-cache \
     # alias python
     ln -sf "$(command -v python3)" /usr/local/bin/python
 
+# Cài Chromium để Puppeteer sử dụng
+RUN apk add --no-cache chromium
+
+# Thiết lập biến môi trường cho Puppeteer trỏ tới Chromium
+ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium-browser"
+
 USER node

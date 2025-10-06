@@ -1,4 +1,4 @@
-FROM docker.n8n.io/n8nio/n8n:next
+FROM docker.n8n.io/n8nio/n8n:latest
 
 USER root
 SHELL ["/bin/sh","-euxo","pipefail","-c"]
